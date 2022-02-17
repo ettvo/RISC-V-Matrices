@@ -14,11 +14,15 @@
 # ==============================================================================
 relu:
 	# Prologue
+	# exit if length of array is less than 1
+	# set a register equal to the array length
+	# set a counter register equal 0
+	# sends the first element of the array to loop start
 
 
 loop_start:
-
-
+	# sets the current element to the positive version
+	# sends to loop continue
 
 
 
@@ -26,6 +30,9 @@ loop_start:
 
 
 loop_continue:
+	# increases the counter by 1 
+	# sends to loop end if counter == array length
+	# else sends the next element of the array to loop start
 
 
 

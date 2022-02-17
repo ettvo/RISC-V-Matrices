@@ -26,30 +26,39 @@
 matmul:
 
 	# Error checks
+	# error if dimensions are invalid (0, <0, NaN, etc.)
+	# error if dimensions of both are invalid (axb, bxc = axc)
 
 
 	# Prologue
 
 
+error:
+	# exit 38 
+
+
 outer_loop_start:
+	# outer loop fills in entries of the finished matrix
+	# allocate space for array (?)
+	# iterate over rows
+	# --> iterate over columns
+	# send row array to dot method
+	# send column array to dot method
+	# get value from inner loop
+	# set new array value to be value from inner loop
 
 
 
 
 inner_loop_start:
-
-
-
-
-
-
-
-
-
+	# inner loop computes the dot product of each entry
+	# sends the given arrays to dot method 
+	# --> always ends at correct end 
 
 
 
 inner_loop_end:
+	# returns a value
 
 
 
