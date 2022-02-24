@@ -68,7 +68,10 @@ dot:
     # use t1 to hold the current dot produt before storing in s2
     
     # jump to loop_start
-    j loop_start
+    # j loop_start
+    
+    # jump to reset_stride_counter due to always starting with 0th term in calculations
+    j reset_stride_counter
     
 
 exit_length:
@@ -85,6 +88,7 @@ loop_start:
     
     # call loop_arr0
     j loop_arr0
+    
     
 loop_arr0:
 	# iterates until next stride location reached
