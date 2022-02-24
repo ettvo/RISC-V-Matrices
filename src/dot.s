@@ -51,12 +51,12 @@ dot:
     # set s3 to be the stride counter for arr0
     # set s3 to 0
     sw s3, 12(sp)
-    add s3, x0, x0
+    addi s3, x0, 1
     
     # set s4 to be the stride counter for arr1
     # set s4 to 0
     sw s4, 16(sp)
-    add s4, x0, x0
+    addi s4, x0, 1
     
     # set s5 to hold the return address 
     # set s5 to 0
@@ -83,27 +83,18 @@ exit_stride:
 loop_start:
 	ebreak
     
-    # save the return address in t0
-    add t0, x0, ra
-    
     # call loop_arr0
-    jal ra, loop_arr0
+    j loop_arr0
     
-    # retrieve the return address from t0
-    add ra, t0, x0
-    
-    # call loop_arr1
-    jal ra, loop_arr1
-    
-    # retrieve the return address from t0
-    add ra, t0, x0
-    
-    # get the dot-product and reset stride counters
-    j reset_stride_counter
-    
-
 loop_arr0:
 	# iterates until next stride location reached
+    
+    # need to exit if stride equal here and go to next loop
+    # can chain from arr 0 --> arr 1 --> loop end 
+    # currently can iterate past end
+    
+    # goes to loop_arr1 if stride counter equal to stride length
+    beq s3, a3, loop_arr1
     
     # increase stride counter by 1
     addi s3, s3, 1
@@ -111,12 +102,11 @@ loop_arr0:
     # increase index by 1
     addi s0, s0, 1
     
-    # send to loop_end if past end of arr0 array is reached
-    beq a2, s0, loop_end
+    # set t0 to the last index of arr0
+    addi t0, a2, -1
     
-    # need to exit if stride equal here and go to next loop
-    # can chain from arr 0 --> arr 1 --> loop end 
-    # currently can iterate past end
+    # send to loop_end if end of arr0 array is reached
+    beq t0, s0, loop_end
     
     # increase pointer by 4
     addi a0, a0, 4
@@ -131,14 +121,27 @@ loop_arr0:
 loop_arr1:
 	# iterates until next stride location reached
     
+    # need to exit if stride equal here and go to next loop
+    # can chain from arr 0 --> arr 1 --> loop end 
+    # currently can iterate past end
+    
+    # goes to reset_stride_counter if stride counter equal to stride length
+    beq s4, s4, reset_stride_counter
+    
+    # send to loop_end if past end of arr1 array is reached
+    beq a2, s1, loop_end
+    
     # increase stride counter by 1
     addi s4, s4, 1
     
     # increase index by 1
     addi s1, s1, 1
     
-    # send to loop_end if past end of arr1 array is reached
-    beq a2, s1, loop_end
+    # set t0 to the last index of arr1
+    addi t0, a2, -1
+    
+    # send to loop_end if end of arr1 array is reached
+    beq t0, s1, loop_end
     
     # need to exit if stride equal here and go to next loop
     # can chain from arr 0 --> arr 1 --> loop end 
@@ -184,7 +187,7 @@ loop_end:
     ebreak
     
 	# needs to return the total_sum register value
-    # set a0 to s3 (total)
+    # set a0 to s2 (total)
     add a0, x0, s2
     
     # resets the return address
