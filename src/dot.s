@@ -36,12 +36,12 @@ dot:
     # set s0 to be current index for arr0
     # set s0 to 0
     sw s0, 0(sp)
-    addi s0, x0, -1
+    addi s0, x0, 0
     
     # set s1 to be current index for arr1
     # set s1 to 0
     sw s1, 4(sp)
-    addi s1, x0, -1
+    addi s1, x0, 0
     
     # set s2 to be total
     # set s2 to 0 
@@ -49,17 +49,17 @@ dot:
     add s2, x0, x0
     
     # set s3 to be the stride counter for arr0
-    # set s3 to 0
+    # set s3 to 1
     sw s3, 12(sp)
     addi s3, x0, 1
     
     # set s4 to be the stride counter for arr1
-    # set s4 to 0
+    # set s4 to 1
     sw s4, 16(sp)
     addi s4, x0, 1
     
     # set s5 to hold the return address 
-    # set s5 to 0
+    # set s5 to x1
     sw s5, 20(sp)
     add s5, x0, x1
     
@@ -102,11 +102,8 @@ loop_arr0:
     # increase index by 1
     addi s0, s0, 1
     
-    # set t0 to the last index of arr0
-    addi t0, a2, -1
-    
-    # send to loop_end if end of arr0 array is reached
-    beq t0, s0, loop_end
+    # send to loop_end if past end of arr0 array is reached
+    beq a2, s0, loop_end
     
     # increase pointer by 4
     addi a0, a0, 4
@@ -128,9 +125,6 @@ loop_arr1:
     # goes to reset_stride_counter if stride counter equal to stride length
     beq s4, s4, reset_stride_counter
     
-    # send to loop_end if past end of arr1 array is reached
-    beq a2, s1, loop_end
-    
     # increase stride counter by 1
     addi s4, s4, 1
     
@@ -140,8 +134,8 @@ loop_arr1:
     # set t0 to the last index of arr1
     addi t0, a2, -1
     
-    # send to loop_end if end of arr1 array is reached
-    beq t0, s1, loop_end
+    # send to loop_end if past end of arr1 array is reached
+    beq a2, s1, loop_end
     
     # need to exit if stride equal here and go to next loop
     # can chain from arr 0 --> arr 1 --> loop end 
@@ -171,8 +165,18 @@ reset_stride_counter:
     # multiplies the values at the two pointers and stores in t0
     mul t0, t0, t1
     
+    ebreak
 	# adds product to total_sum register
     add s2, s2, t0
+    
+    # set t0 to the last index of arr0, arr1
+    addi t0, a2, -1
+    
+    # send to loop_end if end of arr0 array is reached
+    beq t0, s0, loop_end
+    
+    # send to loop_end if end of arr1 array is reached
+    beq t0, s1, loop_end
     
 	# return to loop_start to begin new cycle
     j loop_start
@@ -191,7 +195,7 @@ loop_end:
     add a0, x0, s2
     
     # resets the return address
-    add x1, x0, s5
+    # add x1, x0, s5
     
     # set saved registers to x0 
     add s0, x0, x0
