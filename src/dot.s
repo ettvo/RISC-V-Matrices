@@ -58,10 +58,10 @@ dot:
     sw s4, 16(sp)
     addi s4, x0, 1
     
-    # set s5 to hold the return address 
+    # set s5 to hold counter for calculated elements
     # set s5 to x1
     sw s5, 20(sp)
-    add s5, x0, x1
+    add s5, x0, x0
     
     # use t0 to hold the return address
     
@@ -103,7 +103,7 @@ loop_arr0:
     addi s0, s0, 1
     
     # send to loop_end if past end of arr0 array is reached
-    beq a2, s0, loop_end
+    # beq a2, s0, loop_end
     
     # increase pointer by 4
     addi a0, a0, 4
@@ -129,7 +129,7 @@ loop_arr1:
     addi s1, s1, 1
     
     # send to loop_end if past end of arr1 array is reached
-    beq a2, s1, loop_end
+    # beq a2, s1, loop_end
     
     # increase pointer by 4
     addi a1, a1, 4
@@ -159,13 +159,19 @@ reset_stride_counter:
     add s2, s2, t0
     
     # set t0 to the last index of arr0, arr1
-    addi t0, a2, -1
+    # addi t0, a2, -1
     
     # send to loop_end if end of arr0 array is reached
-    beq t0, s0, loop_end
+    # beq t0, s0, loop_end
     
     # send to loop_end if end of arr1 array is reached
-    beq t0, s1, loop_end
+    # beq t0, s1, loop_end
+    
+    # increase element counter
+    addi s5, s5, 1
+    
+    # send to loop_end if expected number of terms has been calculated
+    beq a2, s5, loop_end
     
 	# return to loop_start to begin new cycle
     j loop_start
@@ -182,9 +188,6 @@ loop_end:
 	# needs to return the total_sum register value
     # set a0 to s2 (total)
     add a0, x0, s2
-    
-    # resets the return address
-    # add x1, x0, s5
     
     # set saved registers to x0 
     add s0, x0, x0
