@@ -110,9 +110,6 @@ loop_arr0:
     
     # send to loop_arr1 again if less than stride for arr0
     blt s3, a3, loop_arr0
-    
-    # return to loop_start if stride counter equal to stride
-    # jalr x0 ra 0
 
 
 loop_arr1:
@@ -123,7 +120,7 @@ loop_arr1:
     # currently can iterate past end
     
     # goes to reset_stride_counter if stride counter equal to stride length
-    beq s4, s4, reset_stride_counter
+    beq s4, a4, reset_stride_counter
     
     # increase stride counter by 1
     addi s4, s4, 1
@@ -131,18 +128,10 @@ loop_arr1:
     # increase index by 1
     addi s1, s1, 1
     
-    # set t0 to the last index of arr1
-    addi t0, a2, -1
-    
     # send to loop_end if past end of arr1 array is reached
     beq a2, s1, loop_end
     
-    # need to exit if stride equal here and go to next loop
-    # can chain from arr 0 --> arr 1 --> loop end 
-    # can currently iterate past end
-    
     # increase pointer by 4
-    # iterates past even if doesn't need to 
     addi a1, a1, 4
     
     # send to loop_arr1 again if less than stride for arr1
@@ -151,12 +140,12 @@ loop_arr1:
 
 
 reset_stride_counter:
-
-	ebreak
     
 	# set stride counters to 0
     add s3, x0, x0
     add s4, x0, x0
+    
+    ebreak
    
     # prepares for multiplying values
     lw t0, 0(a0)
