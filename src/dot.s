@@ -18,49 +18,161 @@
 #     this function terminates the program with error code 37
 # =======================================================
 dot:
-
 	# Prologue
+    
+    # set t0 to 1 
+    addi t0, x0, 1
+    
+	# exit if length less than 1 
+    blt a2, t0, exit_length
+    
+	# exit if stride less than 1 
+    blt a3, t0, exit_stride
+    blt a4, t0, exit_stride
+    
+    # set up saved registers
+    addi sp, sp, -24
+    
+    # set s0 to be current index for arr0
+    # set s0 to 0
+    sw s0, 0(sp)
+    addi s0, x0, -1
+    
+    # set s1 to be current index for arr1
+    # set s1 to 0
+    sw s1, 4(sp)
+    addi s1, x0, -1
+    
+    # set s2 to be total
+    # set s2 to 0 
+    sw s2, 8(sp)
+    add s2, x0, x0
+    
+    # set s3 to be the stride counter for arr0
+    # set s3 to 0
+    sw s3, 12(sp)
+    add s3, x0, x0
+    
+    # set s4 to be the stride counter for arr1
+    # set s4 to 0
+    sw s4, 16(sp)
+    add s4, x0, x0
+    
+    # set s5 to hold the return address 
+    # set s5 to 0
+    sw s5, 20(sp)
+    add s5, x0, x1
+    
+    # use t0 to hold the return address
+    
+    # use t1 to hold the current dot produt before storing in s2
+    
+    # jump to loop_start
+    j loop_start
+    
 
+exit_length:
+	li a0 36
+    j exit
+
+exit_stride:
+	li a0 37
+    j exit
+    
 
 loop_start:
-	# exit if length less than 1 
-	# exit if stride less than 1 
-	# N stride = multiply the Nth terms (pattern) of 
-	# 	the arrays
-	# set the total_sum register to 0
-
-
-
-
-loop_continue:
-	# main branch for looping through a0 and a1
-	# jump loop_arr0
-	# jump loop_arr1
-	# send to reset_stride counter
-	# send to loop continue (exiting handled 
-	# in loop_arr0, loop_arr1)
-
+	ebreak
+    
+    # save the return address in t0
+    add t0, x0, ra
+    
+    # call loop_arr0
+    jal ra, loop_arr0
+    
+    # retrieve the return address from t0
+    add ra, t0, x0
+    
+    # call loop_arr1
+    jal ra, loop_arr1
+    
+    # retrieve the return address from t0
+    add ra, t0, x0
+    
+    # get the dot-product and reset stride counters
+    j reset_stride_counter
+    
 
 loop_arr0:
 	# iterates until next stride location reached
-	# send to loop_end if past end of arr0 array is reached
-	# return to loop_continue
-
+    
+    # increase stride counter by 1
+    addi s3, s3, 1
+    
+    # increase index by 1
+    addi s0, s0, 1
+    
+    # send to loop_end if past end of arr0 array is reached
+    beq a2, s0, loop_end
+    
+    # need to exit if stride equal here and go to next loop
+    # can chain from arr 0 --> arr 1 --> loop end 
+    # currently can iterate past end
+    
+    # increase pointer by 4
+    addi a0, a0, 4
+    
+    # send to loop_arr1 again if less than stride for arr0
+    blt s3, a3, loop_arr0
+    
+    # return to loop_start if stride counter equal to stride
+    # jalr x0 ra 0
 
 
 loop_arr1:
 	# iterates until next stride location reached
-	# send to loop_end if past end of arr0 array is reached
-	# return to loop_continue
-
+    
+    # increase stride counter by 1
+    addi s4, s4, 1
+    
+    # increase index by 1
+    addi s1, s1, 1
+    
+    # send to loop_end if past end of arr1 array is reached
+    beq a2, s1, loop_end
+    
+    # need to exit if stride equal here and go to next loop
+    # can chain from arr 0 --> arr 1 --> loop end 
+    # can currently iterate past end
+    
+    # increase pointer by 4
+    # iterates past even if doesn't need to 
+    addi a1, a1, 4
+    
+    # send to loop_arr1 again if less than stride for arr1
+    blt s4, a4, loop_arr1
+    
 
 
 reset_stride_counter:
-	# set stride counter to 0
-	# multiplies the values at the two pointers
-	# adds product to total_sum register
-	# return to loop_continue
 
+	ebreak
+    
+	# set stride counters to 0
+    add s3, x0, x0
+    add s4, x0, x0
+   
+    # prepares for multiplying values
+    lw t0, 0(a0)
+    lw t1, 0(a1)
+    
+    # multiplies the values at the two pointers and stores in t0
+    mul t0, t0, t1
+    
+	# adds product to total_sum register
+    add s2, s2, t0
+    
+	# return to loop_start to begin new cycle
+    j loop_start
 
 
 
@@ -68,6 +180,25 @@ loop_end:
 
 
 	# Epilogue
-
+    
+    ebreak
+    
 	# needs to return the total_sum register value
+    # set a0 to s3 (total)
+    add a0, x0, s2
+    
+    # resets the return address
+    add x1, x0, s5
+    
+    # set saved registers to x0 
+    add s0, x0, x0
+    add s1, x0, x0
+    add s2, x0, x0
+    add s3, x0, x0
+    add s4, x0, x0
+    add s5, x0, x0
+    
+    # reset SP pointer
+    addi sp, sp, 24
+    
 	ret
