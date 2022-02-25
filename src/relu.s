@@ -150,24 +150,24 @@ loop_end:
     add ra, x0, s4
     
     # set 0(sp) to be the counter pointer equal to 0
-    # lw s0, 0(sp)
-    add s0, x0, x0
+    lw s0, 0(sp)
+    # add s0, x0, x0
     
     # set s1 --> 4(sp) to be the pointer to the current index
-    # lw s1, 4(sp) 
-    add s1, x0, x0
+    lw s1, 4(sp) 
+    # add s1, x0, x0
     
     # set s2 --> 8(sp) to be the value of the current index
-    # lw s2, 8(sp)
-    add s2, x0, x0
+    lw s2, 8(sp)
+    # add s2, x0, x0
     
     # set s3 --> 12(sp) to be the length of the array
-    # lw s3, 12(sp)
-    add s3, x0, x0
+    lw s3, 12(sp)
+    # add s3, x0, x0
     
     # set s4 --> 16(sp) to be the return address
-    # lw s4, 16(sp)
-    add s4, x0, x0
+    lw s4, 16(sp)
+    # add s4, x0, x0
 
 	addi sp, sp, 20
 

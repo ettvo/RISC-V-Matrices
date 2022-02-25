@@ -194,12 +194,12 @@ loop_end:
     add a0, x0, s2
     
     # set saved registers to x0 
-    add s0, x0, x0
-    add s1, x0, x0
-    add s2, x0, x0
-    add s3, x0, x0
-    add s4, x0, x0
-    add s5, x0, x0
+    sw s0, 0(sp)
+    sw s1, 4(sp)
+    sw s2, 8(sp)
+    sw s3, 12(sp)
+    sw s4, 16(sp)
+    sw s5, 20(sp)
     
     # reset SP pointer
     addi sp, sp, 24

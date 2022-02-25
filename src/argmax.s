@@ -114,10 +114,10 @@ loop_end:
     add a0, x0, s0
     
     # reset the saved registers
-    add s0, x0, x0
-    add s1, x0, x0
-    add s2, x0, x0
-    add s3, x0, x0
+    sw s0, 0(sp)
+    sw s1, 4(sp)
+    sw s2, 8(sp)
+    sw s3, 12(sp)
     
     addi sp, sp, 16
 
