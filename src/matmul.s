@@ -92,6 +92,10 @@ outer_loop:
     
     # keeps track of row #, col #
     
+    # get rows by shifting pointer by multiples of 4 and having stride 1
+    # get cols by shifting pointer as necessary and having stride depending on col
+    # num elements to use for 
+    
 	# allocate space for array (?)
 	# iterate over rows
 	# --> iterate over columns
@@ -109,23 +113,72 @@ outer_loop:
     
     
 
-set_row_ptrs_stride:
-	# use row counter s4
+set_row_ptrs:
+	# start:
+	#   a0 (int*)  is the pointer to the start of m0
+	#   a1 (int)   is the # of rows (height) of m0
+	#   a2 (int)   is the # of columns (width) of m0
+	# set t6 to be the counter for set_row_ptrs
+	# use total rows s4
+    # move the row pointer over s4 - 1 many spaces to be at row s4
     
+    # move row pointer 1 space
+    addi a0, a0, 4
+    
+    # increase counter
+    addi t6, x0, 1
+    
+    # restart loop
+    bne a3, t6, set_row_ptrs
+    
+    
+	# end: 
     #   a0 (int*) is the pointer to the start of arr0
     
-    # set a3 to stride 1
-    addi a3, x0, 1
-    # values determined in 
-
-
-set_col_ptrs_stride:
-	# use col counter s5
+# use a3 as col limit
+#    addi a3, s4, -1
     
+
+
+set_col_ptrs:
+	# use total cols s5
+    # start:
+    #   a3 (int*)  is the pointer to the start of m1
+	#   a4 (int)   is the # of rows (height) of m1
+	#   a5 (int)   is the # of columns (width) of m1
+    # set t6 to be the counter for set_row_ptrs
+    # move the col pointer over s5 - 1 many spaces to be at col s5
+    
+    # move col pointer 1 space
+    addi a3, a3, 4
+    
+    # increase counter
+    addi t6, x0, 1
+    
+    # restart loop
+    bne a3, t6, set_col_ptrs
+    
+    # use a3 as col limit
+#    addi a3, s4, -1
+    
+    # end:
 	#   a1 (int*) is the pointer to the start of arr1
     
-    # set a3 to stride 1
-    addi a4, x0, 1
+    
+    
+
+# FUNCTION: Dot product of 2 int arrays
+# Arguments:
+#   a0 (int*) is the pointer to the start of arr0
+#   a1 (int*) is the pointer to the start of arr1
+#   a2 (int)  is the number of elements to use
+#   a3 (int)  is the stride of arr0
+#   a4 (int)  is the stride of arr1
+# Returns:
+#   a0 (int)  is the dot product of arr0 and arr1
+
+# use a3 as col limit
+    # addi a3, s5, -1
 
 
 
@@ -151,14 +204,45 @@ inner_loop:
     
     # error if col of arr0 or row of arr1 aren't equal --> use a2 = keep the same
     
+    # get rows by shifting pointer by multiples of 4 and having stride 1
+    # get cols by shifting pointer as necessary and having stride depending on col
+    # num elements to use for 
+    
+
+    
+    # set t6 to be the counter for set_row_ptrs
+    add t6, x0, x0
+    
+    # use a3 as row limit
+    # multiply col*(row # - 1) to calculate row limit
+    addi a3, s4, -1
+    mul a3, a2, a3
+    
     # set row pointers
-    jal ra, set_row_ptrs_stride
+    jal ra, set_row_ptrs
     
     # restore the return address
     add ra, x0, t5
     
+    # get rows by shifting pointer by multiples of 4 and having stride 1
+    # get cols by shifting pointer as necessary and having stride depending on col
+    # num elements to use for 
+    
+    # set t6 to be the counter for set_col_ptrs
+    add t6, x0, x0
+    
+    # use a3 as col limit
+    # use col size as col limit
+    addi a3, s5, -1
+    
     # set col pointers
-    jal ra, set_col_ptrs_stride
+    jal ra, set_col_ptrs
+    
+    # set a3 (arr0 row stride) to stride 1
+    addi a3, x0, 1
+    
+    # set a4 (arr1 col stride) to stride col length
+    addi a4, x0, a5
  
     # restore the return address
     add ra, x0, t5
@@ -182,7 +266,7 @@ inner_loop:
     add a4, x0, t4
     
     # jumps to outer_loop_end
-    j outer_loop_end
+    j outer_loop_end_beg
     
     
 
@@ -196,45 +280,37 @@ inner_loop:
 # Returns:
 #   a0 (int)  is the dot product of arr0 and arr1
 
-set_row_neg1:
-	# set s4 to be -1 so it is incremented to 0
-    addi s4, x0, -1
-	
-
-set_col_neg1:
-	# set s5 to be -1 so it is incremented to 0
-    addi s5, x0, -1
-
 reset_row:
-	# set s4 to be the current row of arr0
+	bne s4, a4, reset_col
     
+	# set s4 to be 0
+    add s4, x0, x0
+    
+    j reset_col
 	
 
 reset_col:
-	# set s5 to be the current col of arr1
+	bne s5, a5, outer_loop_end
     
+	# set s5 to be the current col of arr1
+    # set s5 to be 0
+    add s5, x0, x0
+    
+    j outer_loop_end
+    
+    
+outer_loop_end_beg:
+
+	# increases row and col counters by 1
+    addi s4, s4, 1
+    addi s5, s5, 1
+    
+    j reset_row
     
 
 outer_loop_end:
-	# increases all iterating variables
-    # save the return address in t5
-    add t5, x0, ra
-    
-    # reset row # for arr0
-    # beq s4, a1, reset_row
-    jal ra, reset_row
-    
-    # restores the return address
-    add ra, x0, t5
-    
-    # reset col # for arr1
-    # beq s5, a5, reset_col
-    jal ra, reset_col
-    
-    # restores the return address
-    add ra, x0, t5
-    
-    # stores dot product in current pos in C
+
+	# stores dot product in current pos in C
     sw s6, 0(a6)
     
     # move pointer of array C to next entry
@@ -243,8 +319,8 @@ outer_loop_end:
     # increase entry counter
     addi s3, s3, 1
     
-    # restart loop
-    j outer_loop_end
+	j outer_loop_start
+
     
 
 
@@ -260,7 +336,7 @@ epilogue:
     
     addi sp, sp, -28
     
-    
+    # does a6 still need to point to start of d?
 
 	# Epilogue
 
