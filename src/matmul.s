@@ -41,39 +41,45 @@ matmul:
 	# set up saved registers
     addi sp, sp, -36
     
-    # set s0 to be the pointer to the first element of m0 
-	sw s0, 0(sp)
-    add s0, x0, a0
+    sw s0, 0(sp)
     
-    # set s1 to be the pointer to the first element of m1
-	sw s1, 4(sp)
-    add s1, x0, a3
+    sw s1, 4(sp)
     
-    # set s2 to be the entry limit
-	sw s2, 8(sp)
-    add s2, x0, x0
+    sw s2, 8(sp)
     
-    # set s3 to be the entry counter
-	sw s3, 12(sp)
-    mul s3, a1, a5
+    sw s3, 12(sp)
     
-    # set s4 to be the current row of arr0
     sw s4, 16(sp)
-    add s4, x0, x0
     
-    # set s5 to be the current col of arr1
     sw s5, 20(sp)
-    add s5, x0, x0
     
-    # set s6 to be the current dot product
     sw s6, 24(sp)
-    add s6, x0, x0
-    
     # set s7 to act as a temporary register
     sw s7, 28(sp)
     
     # set s8 to act as a temporary register
     sw s8, 32(sp)
+    
+    # set t0 to be the pointer to the first element of m0 
+    add t0, x0, a0
+    
+    # set t1 to be the pointer to the first element of m1
+    add t1, x0, a3
+    
+    # set t2 to be the entry limit
+    add t2, x0, x0
+    
+    # set t3 to be the entry counter
+    mul t3, a1, a5
+    
+    # set t4 to be the current row of arr0
+    add t4, x0, x0
+    
+    # set t5 to be the current col of arr1
+    add t5, x0, x0
+    
+    # set t6 to be the current dot product
+    add t6, x0, x0
     
     
 	# Prologue
@@ -133,10 +139,10 @@ set_row_ptrs:
     addi a0, a0, 4
     
     # increase counter
-    addi t6, x0, 1
+    addi s6, x0, 1
     
     # restart loop
-    bne a4, t6, set_row_ptrs
+    bne a4, s6, set_row_ptrs
     
 	# end: 
     #   a0 (int*) is the pointer to the start of arr0
@@ -159,10 +165,10 @@ set_col_ptrs:
     addi a3, a3, 4
     
     # increase counter
-    addi t6, x0, 1
+    addi s6, x0, 1
     
     # restart loop
-    bne a4, t6, set_col_ptrs
+    bne a4, s6, set_col_ptrs
     
     # use a3 as col limit
 #    addi a3, s4, -1
@@ -196,14 +202,14 @@ inner_loop:
     # sets up and calls dot product to get value
     
     # set dot product counter to 0
-    add s6, x0, x0
+    add t6, x0, x0
     
     # save a0-a4 in t0-t4
-    add t0, x0, a0
-    add t1, x0, a1
-    add t2, x0, a2
-    add t3, x0, a3
-    add t4, x0, a4
+    add s0, x0, a0
+    add s1, x0, a1
+    add s2, x0, a2
+    add s3, x0, a3
+    add s4, x0, a4
     add s7, x0, a5
     add s8, x0, a6
     
@@ -213,7 +219,7 @@ inner_loop:
     # save a6 in s8
     
     # save the return address in t5
-    add t5, x0, ra
+    add s5, x0, ra
     
     # error if col of arr0 or row of arr1 aren't equal --> use a2 = keep the same
     
@@ -223,12 +229,12 @@ inner_loop:
     
     # set t6 to be the counter for set_row_ptrs
     # set to -1 to account for iterating for 0
-    addi t6, x0, -1
+    addi s6, x0, -1
     
     # use a4 as row limit
     # multiply col*(row # - 1) to calculate row limit
-    addi a4, s4, -1
-    mul a4, a2, a4
+    addi a4, t4, -1
+    mul a4, t2, a4
     
     # move row pointer 1 space
     addi a0, a0, -4
@@ -237,7 +243,7 @@ inner_loop:
     jal ra, set_row_ptrs
     
     # restore the return address
-    add ra, x0, t5
+    add ra, x0, s5
     
     # get rows by shifting pointer by multiples of 4 and having stride 1
     # get cols by shifting pointer as necessary and having stride depending on col
@@ -245,11 +251,11 @@ inner_loop:
     
     # set t6 to be the counter for set_col_ptrs
     # set to -1 to account for iterating for 0
-    addi t6, x0, -1
+    addi s6, x0, -1
     
     # use a4 as col limit
     # use col size as col limit
-    addi a4, s5, -1
+    addi a4, t5, -1
     
     # move col pointer back 1 space
     addi a3, a3, -4
@@ -261,10 +267,10 @@ inner_loop:
     addi a3, x0, 1
     
     # set a4 (arr1 col stride) to row size (width)
-    addi a4, x0, t2
+    addi a4, x0, s2
  
     # restore the return address
-    add ra, x0, t5
+    add ra, x0, s5
     
     # change the a0-a4 to have the registers necessary to call dot.s
     
@@ -272,17 +278,17 @@ inner_loop:
     jal ra, dot
     
     # restore the return address
-    add ra, x0, t5
+    add ra, x0, s5
     
     # stores current dot product in s6
-    add s6, x0, a0
+    add t6, x0, a0
     
     # retrieve a0-a4 from t0-t4
-    add a0, x0, t0
-    add a1, x0, t1
-    add a2, x0, t2
-    add a3, x0, t3
-    add a4, x0, t4
+    add a0, x0, s0
+    add a1, x0, s1
+    add a2, x0, s2
+    add a3, x0, s3
+    add a4, x0, s4
     add a5, x0, s7
     add a6, x0, s8
     
@@ -302,20 +308,20 @@ inner_loop:
 #   a0 (int)  is the dot product of arr0 and arr1
 
 reset_row:
-	bne s4, a4, reset_col
+	bne t4, a4, reset_col
     
 	# set s4 to be 0
-    add s4, x0, x0
+    add t4, x0, x0
     
     j reset_col
 	
 
 reset_col:
-	bne s5, a5, outer_loop_end
+	bne t5, a5, outer_loop_end
     
 	# set s5 to be the current col of arr1
     # set s5 to be 0
-    add s5, x0, x0
+    add t5, x0, x0
     
     j outer_loop_end
     
@@ -323,8 +329,8 @@ reset_col:
 outer_loop_end_beg:
 
 	# increases row and col counters by 1
-    addi s4, s4, 1
-    addi s5, s5, 1
+    addi t4, t4, 1
+    addi t5, t5, 1
     
     j reset_row
     
@@ -332,13 +338,13 @@ outer_loop_end_beg:
 outer_loop_end:
 
 	# stores dot product in current pos in C
-    sw s6, 0(a6)
+    sw t6, 0(a6)
     
     # move pointer of array C to next entry
     addi a6, a6, 4
     
     # increase entry counter
-    addi s3, s3, 1
+    addi t3, t3, 1
     
 	j outer_loop_start
 
