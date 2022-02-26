@@ -39,7 +39,7 @@ matmul:
     bne a2, a4, exit_error
 
 	# set up saved registers
-    addi sp, sp, -28
+    addi sp, sp, -36
     
     # set s0 to be the pointer to the first element of m0 
 	sw s0, 0(sp)
@@ -68,6 +68,13 @@ matmul:
     # set s6 to be the current dot product
     sw s6, 24(sp)
     add s6, x0, x0
+    
+    # set s7 to act as a temporary register
+    sw s7, 28(sp)
+    
+    # set s8 to act as a temporary register
+    sw s8, 32(sp)
+    
     
 	# Prologue
     j outer_loop
@@ -129,8 +136,7 @@ set_row_ptrs:
     addi t6, x0, 1
     
     # restart loop
-    bne a3, t6, set_row_ptrs
-    
+    bne a4, t6, set_row_ptrs
     
 	# end: 
     #   a0 (int*) is the pointer to the start of arr0
@@ -156,7 +162,7 @@ set_col_ptrs:
     addi t6, x0, 1
     
     # restart loop
-    bne a3, t6, set_col_ptrs
+    bne a4, t6, set_col_ptrs
     
     # use a3 as col limit
 #    addi a3, s4, -1
@@ -198,6 +204,13 @@ inner_loop:
     add t2, x0, a2
     add t3, x0, a3
     add t4, x0, a4
+    add s7, x0, a5
+    add s8, x0, a6
+    
+    # use s9 to store a2
+    
+    # save a5 in s7
+    # save a6 in s8
     
     # save the return address in t5
     add t5, x0, ra
@@ -208,15 +221,17 @@ inner_loop:
     # get cols by shifting pointer as necessary and having stride depending on col
     # num elements to use for 
     
-
-    
     # set t6 to be the counter for set_row_ptrs
-    add t6, x0, x0
+    # set to -1 to account for iterating for 0
+    addi t6, x0, -1
     
-    # use a3 as row limit
+    # use a4 as row limit
     # multiply col*(row # - 1) to calculate row limit
-    addi a3, s4, -1
-    mul a3, a2, a3
+    addi a4, s4, -1
+    mul a4, a2, a4
+    
+    # move row pointer 1 space
+    addi a0, a0, -4
     
     # set row pointers
     jal ra, set_row_ptrs
@@ -229,11 +244,15 @@ inner_loop:
     # num elements to use for 
     
     # set t6 to be the counter for set_col_ptrs
-    add t6, x0, x0
+    # set to -1 to account for iterating for 0
+    addi t6, x0, -1
     
-    # use a3 as col limit
+    # use a4 as col limit
     # use col size as col limit
-    addi a3, s5, -1
+    addi a4, s5, -1
+    
+    # move col pointer back 1 space
+    addi a3, a3, -4
     
     # set col pointers
     jal ra, set_col_ptrs
@@ -241,8 +260,8 @@ inner_loop:
     # set a3 (arr0 row stride) to stride 1
     addi a3, x0, 1
     
-    # set a4 (arr1 col stride) to stride col length
-    addi a4, x0, a5
+    # set a4 (arr1 col stride) to row size (width)
+    addi a4, x0, t2
  
     # restore the return address
     add ra, x0, t5
@@ -264,6 +283,8 @@ inner_loop:
     add a2, x0, t2
     add a3, x0, t3
     add a4, x0, t4
+    add a5, x0, s7
+    add a6, x0, s8
     
     # jumps to outer_loop_end
     j outer_loop_end_beg
@@ -333,8 +354,10 @@ epilogue:
     lw s4, 16(sp)
     lw s5, 20(sp)
     lw s6, 24(sp)
+    lw s7, 28(sp)
+    lw s8, 32(sp)
     
-    addi sp, sp, -28
+    addi sp, sp, -36
     
     # does a6 still need to point to start of d?
 
