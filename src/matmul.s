@@ -189,8 +189,8 @@ inner_loop_end:
     # set a4 (arr1 col stride) to row size (width = # cols)
     add a4, x0, a5
  
-    # restore the return address
-    add ra, x0, s9
+    # save the return address
+    add s9, x0, ra
     
    	# calls dot.s
     jal ra, dot
