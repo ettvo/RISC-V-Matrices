@@ -59,9 +59,8 @@ matmul:
     # # a2 == a4, so s5 stores a6
     add s5, x0, a6
     
-    # use s6 as the entry counter for how many entries in d have been filled
+    # removed use for s6; need to clean up later
     sw s6, 24(sp)
-    add s6, x0, x0
     
     # use s7 as arr0 row counter
     sw s7, 28(sp)
@@ -71,13 +70,15 @@ matmul:
     sw s8, 32(sp)
     add s8, x0, x0
     
-    # use s9 to store return address in inner loop
+    # use s9 to store return address (in inner loop?)
     sw s9, 36(sp)
+    add s9, x0, ra
+  
     
     # need to remember to iterate these
     
 	# Prologue
-    j outer_loop_start
+    j inner_loop_start
     
     
 exit_error:
@@ -92,15 +93,12 @@ outer_loop_start:
     
     ebreak 
     
-    # set t0 to be entry limit
-    mul t0, a1, a5
-    
     # exit if all entries in new array C filled
-    beq s6, t0, epilogue
+    # measured by comparing row total to row counter
+    # beq s7, a1, epilogue
     
     # begins inner loop
     j inner_loop_start
-    
     
 
 inner_loop_start:
@@ -190,13 +188,13 @@ inner_loop_end:
     add a4, x0, a5
  
     # save the return address
-    add s9, x0, ra
+    # add s9, x0, ra
     
    	# calls dot.s
     jal ra, dot
     
     # restore the return address
-    add ra, x0, s9
+    # add ra, x0, s9
     
     ebreak
     
@@ -278,15 +276,18 @@ outer_loop_end:
     addi a6, a6, 4
     
     # increase entry counter
-    addi s6, s6, 1
+    # addi s6, s6, 1
     
     # increment col counter for arr1
     addi s8, s8, 1
     
+    ebreak
+    
     # update row, col counters
     jal ra, update_row
     
-	j outer_loop_start
+    # begins inner loop
+    j outer_loop_start
     
     
 ######### need to fix reset 
@@ -307,11 +308,17 @@ incr_row:
 	# set col counter to be 0
     add s8, x0, x0
     
+    # exits if exit condition reached / all entries filled out
+    beq s7, a1, epilogue
+    
     j outer_loop_start
 
 epilogue:
     
     # does a6 still need to point to start of d?
+    
+    # restores original return address
+    add ra, x0, s9
     
     # restore s0-s7
     lw s0, 0(sp)
