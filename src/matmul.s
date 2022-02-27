@@ -77,7 +77,7 @@ matmul:
     # need to remember to iterate these
     
 	# Prologue
-    j outer_loop
+    j outer_loop_start
     
     
 exit_error:
@@ -85,13 +85,13 @@ exit_error:
     j exit
 
 
-outer_loop:
+outer_loop_start:
 	# outer loop fills in entries of the finished matrix
     # handles pointer to current elements in row major form 
     # goes 1 entry at a time 
     
     # set t0 to be entry limit
-    mul t0, s1, s4
+    mul t0, a1, a5
     
     # exit if all entries in new array C filled
     beq s6, t0, epilogue
@@ -176,7 +176,7 @@ inner_loop:
     addi a3, x0, 1
     
     # set a4 (arr1 col stride) to row size (width = # cols)
-    addi a4, x0, s4
+    add a4, x0, a5
  
     # restore the return address
     add ra, x0, s9
