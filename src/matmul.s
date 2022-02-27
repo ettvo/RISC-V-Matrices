@@ -70,13 +70,10 @@ matmul:
     sw s8, 32(sp)
     add s8, x0, x0
     
-    # use s9 to store return address (in inner loop?)
+    # use s9 to store return address
     sw s9, 36(sp)
     add s9, x0, ra
   
-    
-    # need to remember to iterate these
-    
 	# Prologue
     j inner_loop_start
     
@@ -91,14 +88,8 @@ outer_loop_start:
     # handles pointer to current elements in row major form 
     # goes 1 entry at a time 
     
-    ebreak # start of outer_loop_start
-    
     # updates storage of a6 (pointer to C) in s5
     add s5, x0, a6
-    
-    # exit if all entries in new array C filled
-    # measured by comparing row total to row counter
-    # beq s7, a1, epilogue
     
     # begins inner loop
     j inner_loop_start
@@ -116,11 +107,6 @@ inner_loop_start:
 	# --> always ends at correct end 
     # sets up and calls dot product to get value
     
-    # save the return address in s9
-    # add s9, x0, ra
-    
-    ebreak # start of inner_loop
-    
     # move row pointer 1 space
     addi a0, a0, -4
     
@@ -130,27 +116,19 @@ inner_loop_start:
     
     # use s7 as row limit
     # multiply col_0*(row_0 # - 1) to calculate row limit for arr0
-    # issue is that this can be 0 and therefore never exit
     mul a2, s7, s2
-    
-    ebreak # before setting row ptr
     
     # set row pointers
     j set_ptrs_row # row ptr
     
-    # restore the return address
-    # add ra, x0, s9
     
 inner_loop_get_col:
     
     # store the pointer to arr0 in t0
     add t0, x0, a0
     
-    # need to set a0 to arr1 pointer
-    
     # get rows by shifting pointer by multiples of 4 and having stride 1
     # get cols by shifting pointer as necessary and having stride depending on col
-    # num elements to use for 
     
     # move into a0 for calling set_ptrs
     # move col pointer back 1 space
@@ -163,8 +141,6 @@ inner_loop_get_col:
     # use a2 as col limit
     # use col_1 size as col limit for arr1
     add a2, x0, s8
-    
-    ebreak # before setting col ptr
     
     # set col pointers
     j set_ptrs_col # col ptr
@@ -182,8 +158,6 @@ inner_loop_end:
     # set a1 to be pointer to m1 col
     add a1, x0, t1
     
-    ebreak # before dot product
-    
     # set a2 to be # of elems --> length of row (m0 cols; s1) or height of col (m1 rows; s4)
     add a2, x0, s2
     
@@ -192,9 +166,6 @@ inner_loop_end:
     
     # set a4 (arr1 col stride) to row size (width = # cols)
     add a4, x0, a5
- 
-    # save the return address
-    # add s9, x0, ra
     
 # Arguments:
 #   a0 (int*) is the pointer to the start of arr0
@@ -207,11 +178,6 @@ inner_loop_end:
     
    	# calls dot.s
     jal ra, dot
-    
-    # restore the return address
-    # add ra, x0, s9
-    
-    ebreak # after dot product
     
     # dot product always saved in a0
     # stores current dot product in t0
@@ -237,7 +203,6 @@ set_ptrs_row:
 	#   a2 (int)   is the limit to the counter
     # return:
     # 	none (a1 pointing to the expected position in the array)
-	# use total rows s4
     # move the row pointer over s4 - 1 many spaces to be at row s4
     
     # move row pointer 1 space
@@ -247,12 +212,8 @@ set_ptrs_row:
     addi a1, a1, 1
     
     # restart loop
-    # addi t0, a2, -1
-    
     bne a1, a2, set_ptrs_row
     
-    # goes to outer_loop_end if just here 
-    # does not return
     j inner_loop_get_col
     
 set_ptrs_col:
@@ -262,7 +223,6 @@ set_ptrs_col:
 	#   a2 (int)   is the limit to the counter
     # return:
     # 	none (a1 pointing to the expected position in the array)
-	# use total rows s4
     # move the row pointer over s4 - 1 many spaces to be at row s4
     
     # move row pointer 1 space
@@ -282,7 +242,6 @@ set_ptrs_col:
     
     
 outer_loop_end:
-	ebreak # before storing dot product
 	# stores dot product in current pos in C
     sw t0, 0(a6)
     lw t0, 0(a6)
@@ -297,8 +256,6 @@ outer_loop_end:
     # increment col counter for arr1
     addi s8, s8, 1
     
-    ebreak # at end of outer_loop_end; before update_row, restart outer loop
-    
     # update row, col counters
     jal ra, update_row
     
@@ -306,13 +263,11 @@ outer_loop_end:
     j outer_loop_start
     
     
-######### need to fix reset 
 update_row:
 	# actually needs to keep increasing col until end --> then set col to 0; increase row by 1 (row major form)
     # increments row counter when end of col for arr1 reached
     
     # checks if end of col for arr1 not reached (counter < col #)
-    # bne s8, a5
     beq s8, a5, incr_row
     j outer_loop_start
     
