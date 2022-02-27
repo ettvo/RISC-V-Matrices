@@ -201,13 +201,8 @@ squared_loss
 
 class TestSquaredLoss(TestCase):
     def test_simple1(self):
-        # load the test for abs_loss.s
+        # load the test for squared_loss.s
         t = AssemblyTest(self, "../coverage-src/squared_loss.s")
-
-        # raise NotImplementedError("TODO")
-
-        # FUNCTION: Get the absolute difference of 2 int arrays,
-        #   store in a third array and compute the sum
 
         # create array0 in the data section
         array0 = t.array([1])
@@ -229,17 +224,12 @@ class TestSquaredLoss(TestCase):
         t.check_array(array2, [4])
         # check that the register a0 contains the correct output
         t.check_scalar("a0", 4)
-        # generate the `assembly/TestAbsLoss_test_simple.s` file and run it through venus
+        # generate the file for this test and run it through venus
         t.execute()
     
     def test_simple2(self):
-        # load the test for abs_loss.s
+        # load the test for squared_loss.s
         t = AssemblyTest(self, "../coverage-src/squared_loss.s")
-
-        # raise NotImplementedError("TODO")
-
-        # FUNCTION: Get the absolute difference of 2 int arrays,
-        #   store in a third array and compute the sum
 
         # create array0 in the data section
         array0 = t.array([1])
@@ -261,11 +251,11 @@ class TestSquaredLoss(TestCase):
         t.check_array(array2, [4])
         # check that the register a0 contains the correct output
         t.check_scalar("a0", 4)
-        # generate the `assembly/TestAbsLoss_test_simple.s` file and run it through venus
+        # generate the file for this test and run it through venus
         t.execute()
 
     def test_incorrect_dim_neg(self):
-        # load the test for abs_loss.s
+        # load the test for squared_loss.s
         t = AssemblyTest(self, "../coverage-src/squared_loss.s")
         # create array0 in the data section
         array0 = t.array([3])
@@ -283,11 +273,11 @@ class TestSquaredLoss(TestCase):
         t.input_array("a3", array2)
         # call the `abs_loss` function
         t.call("squared_loss")
-        # generate the `assembly/TestAbsLoss_test_simple.s` file and run it through venus
+        # generate the file for this test and run it through venus
         t.execute(code=36)
     
     def test_incorrect_dim_0(self):
-        # load the test for abs_loss.s
+        # load the test for squared_loss.s
         t = AssemblyTest(self, "../coverage-src/squared_loss.s")
         # create array0 in the data section
         array0 = t.array([1])
@@ -305,17 +295,12 @@ class TestSquaredLoss(TestCase):
         t.input_array("a3", array2)
         # call the `abs_loss` function
         t.call("squared_loss")
-        # generate the `assembly/TestAbsLoss_test_simple.s` file and run it through venus
+        # generate the file for this test and run it through venus
         t.execute(code=36)
 
     def test_long_dup(self):
-        # load the test for abs_loss.s
+        # load the test for squared_loss.s
         t = AssemblyTest(self, "../coverage-src/squared_loss.s")
-
-        # raise NotImplementedError("TODO")
-
-        # FUNCTION: Get the absolute difference of 2 int arrays,
-        #   store in a third array and compute the sum
 
         # create array0 in the data section
         array0 = t.array([1,2,3,4,5,6,7,8,9,10])
@@ -337,7 +322,7 @@ class TestSquaredLoss(TestCase):
         t.check_array(array2, [0])
         # check that the register a0 contains the correct output
         t.check_scalar("a0", 0)
-        # generate the `assembly/TestAbsLoss_test_simple.s` file and run it through venus
+        # generate the file for this testand run it through venus
         t.execute()
 
     # Add other test cases if neccesary
@@ -392,7 +377,7 @@ class TestZeroOneLoss(TestCase):
         t.execute()
 
     def test_incorrect_dim_neg(self):
-        # load the test for abs_loss.s
+        # load the test for zero_one_loss.s
         t = AssemblyTest(self, "../coverage-src/zero_one_loss.s")
         # create array0 in the data section
         array0 = t.array([3])
@@ -410,11 +395,11 @@ class TestZeroOneLoss(TestCase):
         t.input_array("a3", array2)
         # call the `abs_loss` function
         t.call("zero_one_loss")
-        # generate the `assembly/TestAbsLoss_test_simple.s` file and run it through venus
+        # generate the file for this test and run it through venus
         t.execute(code=36)
     
     def test_incorrect_dim_0(self):
-        # load the test for abs_loss.s
+        # load the test for zero_one_loss.s
         t = AssemblyTest(self, "../coverage-src/zero_one_loss.s")
         # create array0 in the data section
         array0 = t.array([1])
@@ -432,17 +417,12 @@ class TestZeroOneLoss(TestCase):
         t.input_array("a3", array2)
         # call the `abs_loss` function
         t.call("zero_one_loss")
-        # generate the `assembly/TestAbsLoss_test_simple.s` file and run it through venus
+        # generate the file for this test and run it through venus
         t.execute(code=36)
 
     def test_long_dup(self):
-        # load the test for abs_loss.s
+        # load the test for zero_one_loss.s
         t = AssemblyTest(self, "../coverage-src/zero_one_loss.s")
-
-        # raise NotImplementedError("TODO")
-
-        # FUNCTION: Get the absolute difference of 2 int arrays,
-        #   store in a third array and compute the sum
 
         # create array0 in the data section
         array0 = t.array([1,2,3,4,5,6,7,8,9,10])
@@ -464,7 +444,7 @@ class TestZeroOneLoss(TestCase):
         t.check_array(array2, [1,1,1,1,1,1,1,1,1,1])
         # check that the register a0 contains the correct output
         t.check_scalar("a0", 0)
-        # generate the `assembly/TestAbsLoss_test_simple.s` file and run it through venus
+        # generate the file for this test and run it through venus
         t.execute()
 
     
@@ -506,7 +486,7 @@ class TestInitializeZero(TestCase):
         # check that the result array contains the correct output
         result_array = [0]
         t.check_array_pointer("a0", result_array)
-        # generate the `assembly/TestAbsLoss_test_simple.s` file and run it through venus
+        # generate the file for this test and run it through venus
         t.execute()
     
     def test_simple2(self):
@@ -520,7 +500,7 @@ class TestInitializeZero(TestCase):
         # check that the result array contains the correct output
         result_array = [0,0,0,0,0,0,0,0,0,0]
         t.check_array_pointer("a0", result_array)
-        # generate the `assembly/TestAbsLoss_test_simple.s` file and run it through venus
+        # generate the file for this test and run it through venus
         t.execute()
 
     def test_incorrect_dim_neg(self):
@@ -534,7 +514,7 @@ class TestInitializeZero(TestCase):
         # check that the result array contains the correct output
         result_array = [0]
         t.check_array_pointer("a0", result_array)
-        # generate the `assembly/TestAbsLoss_test_simple.s` file and run it through venus
+        # generate the file for this test and run it through venus
         t.execute(code=36)
     
     def test_incorrect_dim_0(self):
@@ -548,7 +528,7 @@ class TestInitializeZero(TestCase):
         # check that the result array contains the correct output
         result_array = [0]
         t.check_array_pointer("a0", result_array)
-        # generate the `assembly/TestAbsLoss_test_simple.s` file and run it through venus
+        # generate the file for this test and run it through venus
         t.execute(code=36)
 
     def test_malloc_err(self):
@@ -562,7 +542,7 @@ class TestInitializeZero(TestCase):
         # check that the result array contains the correct output
         result_array = [0]
         t.check_array_pointer("a0", result_array)
-        # generate the `assembly/TestAbsLoss_test_simple.s` file and run it through venus
+        # generate the file for this test and run it through venus
         t.execute(fail="malloc", code=26)
 
     # Add other test cases if neccesary
