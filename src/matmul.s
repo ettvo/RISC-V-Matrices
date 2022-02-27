@@ -237,6 +237,7 @@ set_ptrs_row:
     # addi t0, a2, -1
     
     bne a1, a2, set_ptrs_row
+    
     # goes to outer_loop_end if just here 
     # does not return
     j inner_loop_get_col
@@ -261,6 +262,7 @@ set_ptrs_col:
     # addi t0, a2, -1
     
     bne a1, a2, set_ptrs_col
+    
     # goes to outer_loop_end if just here 
     # does not return
     j inner_loop_end

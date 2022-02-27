@@ -84,8 +84,6 @@ exit_stride:
     
 
 loop_start:
-	ebreak
-    
     # call loop_arr0
     j loop_arr0
     
@@ -149,16 +147,12 @@ reset_stride_counter:
     add s3, x0, x0
     add s4, x0, x0
     
-    ebreak
-   
     # prepares for multiplying values
     lw t0, 0(a0)
     lw t1, 0(a1)
     
     # multiplies the values at the two pointers and stores in t0
     mul t0, t0, t1
-    
-    ebreak
 	# adds product to total_sum register
     add s2, s2, t0
     
@@ -186,9 +180,6 @@ loop_end:
 
 
 	# Epilogue
-    
-    ebreak
-    
 	# needs to return the total_sum register value
     # set a0 to s2 (total)
     add a0, x0, s2
