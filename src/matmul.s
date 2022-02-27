@@ -91,7 +91,10 @@ outer_loop_start:
     # handles pointer to current elements in row major form 
     # goes 1 entry at a time 
     
-    ebreak 
+    ebreak # start of outer_loop_start
+    
+    # updates storage of a6 (pointer to C) in s5
+    add s5, x0, a6
     
     # exit if all entries in new array C filled
     # measured by comparing row total to row counter
@@ -116,6 +119,8 @@ inner_loop_start:
     # save the return address in s9
     # add s9, x0, ra
     
+    ebreak # start of inner_loop
+    
     # move row pointer 1 space
     addi a0, a0, -4
     
@@ -123,13 +128,12 @@ inner_loop_start:
     # set to -1 to account for iterating for 0
     addi a1, x0, -1
     
-    # use a2 as row limit
+    # use s7 as row limit
     # multiply col_0*(row_0 # - 1) to calculate row limit for arr0
     # issue is that this can be 0 and therefore never exit
-    addi a2, s1, -1
-    mul a2, a2, s2
+    mul a2, s7, s2
     
-    ebreak
+    ebreak # before setting row ptr
     
     # set row pointers
     j set_ptrs_row # row ptr
@@ -158,9 +162,9 @@ inner_loop_get_col:
     
     # use a2 as col limit
     # use col_1 size as col limit for arr1
-    addi a2, s4, -1
+    add a2, x0, s8
     
-    ebreak 
+    ebreak # before setting col ptr
     
     # set col pointers
     j set_ptrs_col # col ptr
@@ -178,8 +182,10 @@ inner_loop_end:
     # set a1 to be pointer to m1 col
     add a1, x0, t1
     
+    ebreak # before dot product
+    
     # set a2 to be # of elems --> length of row (m0 cols; s1) or height of col (m1 rows; s4)
-    add a2, x0, s1
+    add a2, x0, s2
     
     # set a3 (arr0 row stride) to stride 1
     addi a3, x0, 1
@@ -190,13 +196,22 @@ inner_loop_end:
     # save the return address
     # add s9, x0, ra
     
+# Arguments:
+#   a0 (int*) is the pointer to the start of arr0
+#   a1 (int*) is the pointer to the start of arr1
+#   a2 (int)  is the number of elements to use
+#   a3 (int)  is the stride of arr0
+#   a4 (int)  is the stride of arr1
+# Returns:
+#   a0 (int)  is the dot product of arr0 and arr1
+    
    	# calls dot.s
     jal ra, dot
     
     # restore the return address
     # add ra, x0, s9
     
-    ebreak
+    ebreak # after dot product
     
     # dot product always saved in a0
     # stores current dot product in t0
@@ -267,9 +282,10 @@ set_ptrs_col:
     
     
 outer_loop_end:
-
+	ebreak # before storing dot product
 	# stores dot product in current pos in C
     sw t0, 0(a6)
+    lw t0, 0(a6)
     # issue where t0 has label used but not defined --> need to switch to using saved or func arg registers
     
     # move pointer of array C to next entry
@@ -281,7 +297,7 @@ outer_loop_end:
     # increment col counter for arr1
     addi s8, s8, 1
     
-    ebreak
+    ebreak # at end of outer_loop_end; before update_row, restart outer loop
     
     # update row, col counters
     jal ra, update_row
