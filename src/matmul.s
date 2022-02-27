@@ -90,6 +90,8 @@ outer_loop_start:
     # handles pointer to current elements in row major form 
     # goes 1 entry at a time 
     
+    ebreak 
+    
     # set t0 to be entry limit
     mul t0, a1, a5
     
@@ -97,11 +99,11 @@ outer_loop_start:
     beq s6, t0, epilogue
     
     # begins inner loop
-    j inner_loop
+    j inner_loop_start
     
     
 
-inner_loop:
+inner_loop_start:
 	# To calculate the entry at row i, column j of C, take the dot product of the ith row of A and the jth column of B. 
     # stored row major
     # get col 1 (0th indexing) by moving array pointer 1 pos forward, stride being the width of the matrix
@@ -114,7 +116,7 @@ inner_loop:
     # sets up and calls dot product to get value
     
     # save the return address in s9
-    add s9, x0, ra
+    # add s9, x0, ra
     
     # move row pointer 1 space
     addi a0, a0, -4
@@ -125,14 +127,19 @@ inner_loop:
     
     # use a2 as row limit
     # multiply col_0*(row_0 # - 1) to calculate row limit for arr0
+    # issue is that this can be 0 and therefore never exit
     addi a2, s1, -1
     mul a2, a2, s2
     
+    ebreak
+    
     # set row pointers
-    jal ra, set_ptrs
+    j set_ptrs_row # row ptr
     
     # restore the return address
-    add ra, x0, s9
+    # add ra, x0, s9
+    
+inner_loop_get_col:
     
     # store the pointer to arr0 in t0
     add t0, x0, a0
@@ -155,9 +162,13 @@ inner_loop:
     # use col_1 size as col limit for arr1
     addi a2, s4, -1
     
-    # set col pointers
-    jal ra, set_ptrs
+    ebreak 
     
+    # set col pointers
+    j set_ptrs_col # col ptr
+    
+
+inner_loop_end:
     # move pointer to arr1 to a1
     add t1, x0, a0
     
@@ -187,6 +198,8 @@ inner_loop:
     # restore the return address
     add ra, x0, s9
     
+    ebreak
+    
     # dot product always saved in a0
     # stores current dot product in t0
     add t0, x0, a0
@@ -204,7 +217,7 @@ inner_loop:
     j outer_loop_end
     
 
-set_ptrs:
+set_ptrs_row:
 	# input for set_row_ptrs:
 	#   a0 (int*)  is the pointer to the start of the row array
 	#   a1 (int)   is the counter
@@ -218,10 +231,39 @@ set_ptrs:
     addi a0, a0, 4
     
     # increase counter
-    addi a1, x0, 1
+    addi a1, a1, 1
     
     # restart loop
-    bne a1, a2, set_ptrs 
+    # addi t0, a2, -1
+    
+    bne a1, a2, set_ptrs_row
+    # goes to outer_loop_end if just here 
+    # does not return
+    j inner_loop_get_col
+    
+set_ptrs_col:
+	# input for set_row_ptrs:
+	#   a0 (int*)  is the pointer to the start of the row array
+	#   a1 (int)   is the counter
+	#   a2 (int)   is the limit to the counter
+    # return:
+    # 	none (a1 pointing to the expected position in the array)
+	# use total rows s4
+    # move the row pointer over s4 - 1 many spaces to be at row s4
+    
+    # move row pointer 1 space
+    addi a0, a0, 4
+    
+    # increase counter
+    addi a1, a1, 1
+    
+    # restart loop
+    # addi t0, a2, -1
+    
+    bne a1, a2, set_ptrs_col
+    # goes to outer_loop_end if just here 
+    # does not return
+    j inner_loop_end
     
     
 outer_loop_end:
