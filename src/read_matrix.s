@@ -28,15 +28,170 @@ read_matrix:
 
 	# Prologue
 
+	# set up stack pointer
+	addi sp, sp, -20
+	sw ra, 0(sp)
+
+	# use s0 to store the matrix pointer
+	sw s0, 4(sp)
+
+	# use s1 to store the row # between function calls
+	sw s1, 8(sp)
+	add s1, x0, a1
+
+	# use s2 to store the col # between function calls
+	sw s2, 12(sp)
+	add s2, x0, a2
+	# remember! a1 and a2 are pointers --> must store with sw t0, 0(a1) or smth
+
+	# use s3 to store the file descriptor from fopen across function calls
+	sw s3, 16(sp)
+
+	# set t0 to be -1 for error testing
+	addi t0, x0, -1
+
+	# set argument parameters for fread
+	# a0 already set
+	add a1, x0, x0
+
+	# open file from a0 with read permissions
+	jal ra, fopen
+
+	# check for fopen_error & break if detected
+	beq a0, t0, fopen_error
+
+	# store file descriptor in s3
+	add s3, x0, a0
+
+	# set arguments for fread to read col #
+	# a0 already set by fopen
+	# set a1 to be the pointer to rows
+	add a1, x0, s1
+	# set a2 to be 4 (size of int)
+	addi a2, x0, 4
+
+	# fread row
+	jal ra, fread
+
+	# check for row error
+	addi t0, x0, 4
+	bne a0, t0, fread_error
 
 
+	# set arguments for fread to read row #
+	# set a0 to be file descriptor
+	add a0, x0, s3
+	# set a1 to be the pointer to cols
+	add a1, x0, s2
+	# set a2 to be 4 (size of int)
+	addi a2, x0, 4
+
+	# fread row
+	jal ra, fread
+
+	# check for row error
+	addi t0, x0, 4
+	bne a0, t0, fread_error
+
+	# calculate size of matrix = (4*col)*row = 4*col*row; store in t0
+	addi t0, x0, 4
+	lw t1, 0(s1) # row #
+	lw t2, 0(s2) # col #
+	mul t0, t0, t1
+	mul t0, t0, t2
+
+	# store size of matrix in a0 
+	add a0, x0, t0
+
+	# call malloc
+	jal ra, malloc
+
+	# check malloc_error
+	beq a0, x0, malloc_error
+
+	# save the matrix pointer in s0
+	add s0, x0, a0
 
 
+	# already done:
+	# a0 set to the pointer matrix
 
+	# todo:
+	# set a1 to the row #
+	lw a1, 0(s1)
+	# set a2 to the col # 
+	lw a2, 0(s2)
+	# set a3 to the file pointer
+	add a3, x0, s3
 
-
+	# read matrix 	
+	jal ra, read_input
 
 	# Epilogue
 
+	# load arguments for fclose
+	add a0, x0, s3
 
+	# close file
+	jal ra, fclose
+
+	# check for fclose_error
+	addi t0, x0, -1
+	beq a0, t0, fclose_error
+
+	# store the pointer to the matrix in a0
+	add a0, x0, s0
+	
+	# restore return register and saved register
+	lw ra, 0(sp)
+	lw s0, 4(sp)
+	lw s1, 8(sp)
+	lw s2, 12(sp)
+	lw s3, 16(sp)
+
+	# restore stack pointer
+	addi sp, sp, 20
+
+	# return
 	ret
+
+
+
+read_input:
+	# ======
+	# inputs:
+	#	a0 	the pointer to the matrix
+	#	a1	the row #
+	#	a2	the col #
+	#	a3	the file pointer
+	# outputs:
+	#	a0	the pointer to the matrix
+	# ======
+
+	# set up row counter
+	# set up col counter
+	# save return address in register
+
+	# call read_matrix loop
+
+read_input_end:
+
+
+
+
+
+malloc_error:
+	li a0 26
+	j exit
+
+fopen_error:
+	li a0 27
+	j exit
+
+fclose_error:
+	li a0 28
+	j exit
+
+fread_error:
+	li a0 29
+	j exit
