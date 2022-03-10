@@ -53,10 +53,17 @@ read_matrix:
 	# set argument parameters for fread
 	# a0 already set
 	add a1, x0, x0
+    
+    ebreak # before fopen
 
 	# open file from a0 with read permissions
 	jal ra, fopen
+    
+    ebreak # after fopen
 
+	# set t0 to be -1 for error testing
+	addi t0, x0, -1
+	
 	# check for fopen_error & break if detected
 	beq a0, t0, fopen_error
 
@@ -70,8 +77,12 @@ read_matrix:
 	# set a2 to be 4 (size of int)
 	addi a2, x0, 4
 
+	ebreak # before fread row
+    
 	# fread row
 	jal ra, fread
+    
+    ebreak # after fread row
 
 	# check for row error
 	addi t0, x0, 4
@@ -85,11 +96,15 @@ read_matrix:
 	add a1, x0, s2
 	# set a2 to be 4 (size of int)
 	addi a2, x0, 4
+    
+    ebreak # before fread col
 
-	# fread row
+	# fread col
 	jal ra, fread
+    
+    ebreak # after fread col
 
-	# check for row error
+	# check for col error
 	addi t0, x0, 4
 	bne a0, t0, fread_error
 
@@ -103,8 +118,12 @@ read_matrix:
 	# store size of matrix in a0 
 	add a0, x0, t0
 
+	ebreak # before malloc
+    
 	# call malloc
 	jal ra, malloc
+    
+    ebreak # after malloc
 
 	# check malloc_error
 	beq a0, x0, malloc_error
@@ -123,18 +142,26 @@ read_matrix:
 	lw a2, 0(s2)
 	# set a3 to the file pointer
 	add a3, x0, s3
+    
+    ebreak # before read_input
 
 	# read matrix 	
 	jal ra, read_input
+    
+    ebreak # after read_input
 
 	# Epilogue
 
 	# load arguments for fclose
 	add a0, x0, s3
+    
+    ebreak # before fclose
 
 	# close file
 	jal ra, fclose
 
+	ebreak # after fclose 
+    
 	# check for fclose_error
 	addi t0, x0, -1
 	beq a0, t0, fclose_error
@@ -167,6 +194,8 @@ read_input:
 	# outputs:
 	#	a0	the pointer to the matrix
 	# ======
+    
+    ebreak # start of read_input
 
 	# set up registers for storing
 	addi sp, sp, -24
@@ -194,11 +223,16 @@ read_input:
 	sw s4, 20(sp)
 	add s4, x0, a0
 
+	ebreak # before read_input_loop
+    
 	# call read_matrix loop
 	j read_input_loop
 
 
 read_input_loop:
+	
+    ebreak # start of read_input_loop
+
 	# perhaps only need row counter
 	# exit conditions
 	beq s2, s3, read_input_end
@@ -211,10 +245,14 @@ read_input_loop:
 	# set a2 to be 4 (size of int)
 	addi a2, x0, 4
 
-	# fread row
+	ebreak # before fread entry
+    
+	# fread entry
 	jal ra, fread
+    
+    ebreak # after fread
 
-	# check for row error
+	# check for entry error
 	addi t0, x0, 4
 	bne a0, t0, fread_error
 
@@ -223,6 +261,8 @@ read_input_loop:
 
 	# increase entry counter
 	addi s2, s2, 4
+    
+    ebreak # before read_input_loop restart
 
 	# restart loop
 	j read_input_loop
@@ -231,6 +271,8 @@ read_input_loop:
 
 
 read_input_end:
+
+	ebreak # start of read_input_end 
 
 	# set a0 to be the matrix pointer
 	add a0, x0, s4
@@ -245,6 +287,8 @@ read_input_end:
 
 	# restore stack pointer
 	addi sp, sp, 24
+    
+    ebreak # end of read_input_end
 
 
 
