@@ -163,18 +163,88 @@ read_input:
 	#	a0 	the pointer to the matrix
 	#	a1	the row #
 	#	a2	the col #
-	#	a3	the file pointer
+	#	a3	the file descriptor for fread
 	# outputs:
 	#	a0	the pointer to the matrix
 	# ======
 
-	# set up row counter
-	# set up col counter
+	# set up registers for storing
+	addi sp, sp, -24
+
+	# store current matrix pointer in s0
+	sw s0, 0(sp)
+	add s0, x0, a0
+
+	# store the file descriptor in s1
+	sw s1, 4(sp)
+	add s1, x0, a3
+
+	# set up s2 to be total entries counter
+	sw s2, 8(sp)
+	add s2, x0, x0
+
+	# set up s3 to be total entries limit
+	sw s3, 12(sp)
+	mul s3, a1, a2
+
 	# save return address in register
+	sw ra, 16(sp)
+
+	# store start of matrix pointer in s4
+	sw s4, 20(sp)
+	add s4, x0, a0
 
 	# call read_matrix loop
+	j read_input_loop
+
+
+read_input_loop:
+	# perhaps only need row counter
+	# exit conditions
+	beq s2, s3, read_input_end
+
+	# set arguments for fread to read row #
+	# set a0 to be file descriptor
+	add a0, x0, s1
+	# set a1 to be the pointer to matrix
+	add a1, x0, s0
+	# set a2 to be 4 (size of int)
+	addi a2, x0, 4
+
+	# fread row
+	jal ra, fread
+
+	# check for row error
+	addi t0, x0, 4
+	bne a0, t0, fread_error
+
+	# increase matrix pointer
+	addi s1, s1, 4
+
+	# increase entry counter
+	addi s2, s2, 4
+
+	# restart loop
+	j read_input_loop
+
+
+
 
 read_input_end:
+
+	# set a0 to be the matrix pointer
+	add a0, x0, s4
+
+	# restore registers
+	lw s0, 0(sp)
+	lw s1, 4(sp)
+	lw s2, 8(sp)
+	lw s3, 12(sp)
+	lw ra, 16(sp)
+	lw s4, 20(sp)
+
+	# restore stack pointer
+	addi sp, sp, 24
 
 
 
