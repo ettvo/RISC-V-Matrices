@@ -27,7 +27,7 @@ write_matrix:
 	# Prologue
 
 	# set up saved registers
-	addi sp, sp, -24
+	addi sp, sp, -28
 
 	# set s0 to be the file descriptor
 	sw s0, 0(sp)
@@ -36,19 +36,22 @@ write_matrix:
 	sw s1, 4(sp)
 	add s1, x0, a1
 
-	# set s2 to be the pointer to the single entry int array for fwrite
+	# set s2 to be the row #
 	sw s2, 8(sp)
+	add s2, x0, a2
 
-	# set s3 to be the row #
+	# set s3 to be the col #
 	sw s3, 12(sp)
-	add s3, x0, a2
+	add s3, x0, a3
 
-	# set s4 to be the col #
+	# set s4 to be the pointer to the row #
 	sw s4, 16(sp)
-	add s4, x0, a3
+
+	# set s5 to be the pointer to the col # 
+	sw s5, 20(sp)
 
 	# store ra
-	sw ra, 20(sp)
+	sw ra, 24(sp)
 
 	# prepare for fopen
 	# a0 already with filename string pointer
@@ -67,31 +70,38 @@ write_matrix:
     
     ebreak # after storing file descriptor in s0
 
-	# set up single entry integer array for fwrite
-	addi a0, x0, 8
+	# set up the row pointer
+	addi a0, x0, 4
 	jal ra, malloc
 	
 	# check for malloc error
 	beq a0, x0, malloc_error
 
-	# store the pointer to the single entry integer array in s2
-	add s2, x0, a0
+	# store the row pointer in s4
+	add s4, x0, a0
+
+	# set up the col pointer
+	addi a0, x0, 4
+	jal ra, malloc
+	
+	# check for malloc error
+	beq a0, x0, malloc_error
+
+	# store the col pointer in s5
+	add s5, x0, a0
 
 	# prepare for fwrite for row #
 	# set a0 to be the file descriptor in s0
 	add a0, x0, s0
 
-	# set a1 to be the single entry integer array in s2
-	add a1, x0, s2
+	# set a1 to be the row pointer in s4
+	add a1, x0, s4
 
-	# store the row # in 0(s2)
-	sw s3, 0(s2)
-
-	# store the col # in 4(s2)
-	sw s4, 4(s2)
+	# store the row # in 0(s4)
+	sw s2, 0(s4)
 	
-	# set a2 to be 2 (row + col = 2 elements)
-	addi a2, x0, 2
+	# set a2 to be 1
+	addi a2, x0, 1
 
 	# set a3 to be the size of an int 
 	addi a3, x0, 4
@@ -100,15 +110,60 @@ write_matrix:
 	jal ra, fwrite
 
 	# check for fwrite error
-	addi t0, x0, 2
+	addi t0, x0, 1
 	bne t0, a0, fwrite_error
+
+	# prepare for fwrite for col #
+	# set a0 to be the file descriptor in s0
+	add a0, x0, s0
+
+	# set a1 to be the col pointer in s5
+	add a1, x0, s5
+
+	# store the col # in 0(s5)
+	sw s3, 0(s5)
+	
+	# set a2 to be 1
+	addi a2, x0, 1
+
+	# set a3 to be the size of an int 
+	addi a3, x0, 4
+
+	# call fwrite
+	jal ra, fwrite
+
+	# check for fwrite error
+	addi t0, x0, 1
+	bne t0, a0, fwrite_error
+
+
+	# prepare to fwrite contents of entire matrix
+	# set a0 to be the file descriptor in s0
+	add a0, x0, s0
+	# set a1 to be the pointer to the matrix in s1
+	add a1, x0, s1
+
+	# set a2 to be the number of elements in the matrix
+	mul a2, s2, s3
+
+	# set a3 to be the size of an int
+	addi a3, x0, 4
+
+	# call fwrite
+	jal ra, fwrite
+
+	# check for fwrite error
+	mul t0, s2, s3
+	bne t0, a0, fwrite_error
+
+
 
 	# Epilogue
 
 	# prepare for fclose
 	add a0, x0, s0
 
-	ebreak # before fclose
+	# ebreak # before fclose
 
 	# fclose file in s2
 	jal ra, fclose
@@ -117,8 +172,13 @@ write_matrix:
 	addi t0, x0, -1
 	beq t0, a0, fclose_error
 
-	# prepare for free
-	add a0, x0, s2
+	# prepare for free row
+	add a0, x0, s4
+	# free the space 
+	jal ra, free
+
+	# prepare for free col
+	add a0, x0, s5
 	# free the space 
 	jal ra, free
 
@@ -128,12 +188,15 @@ write_matrix:
 	lw s2, 8(sp)
 	lw s3, 12(sp)
 	lw s4, 16(sp)
-	lw ra, 20(sp)
+	lw s5, 20(sp)
+	lw ra, 24(sp)
 
 	# restore stack pointer
-	addi sp, sp, 24
+	addi sp, sp, 28
 
 	ret
+
+
 
 
 fopen_error:
