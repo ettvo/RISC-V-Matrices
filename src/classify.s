@@ -30,7 +30,7 @@ classify:
 	bne a0, t0, incorrect_args
 
 	# set up saved registers
-	addi sp, sp, -24
+	addi sp, sp, -28
 
 	# set s0 be the command line args a1
 	sw s0, 0(sp)
@@ -49,8 +49,16 @@ classify:
 	# set s4 to be the pointer for matrix output H (later O)
 	sw s4, 16(sp)
 
+	# set s5 to hold the dimensions for matrices m0, m1, input
+	# dimensions of m0, m1, input in s5
+	# 	matrix	|   row	 |   col  |
+	#	  m0	|  0(s5) |  4(s5) |
+	#	  m1	|  8(s5) | 12(s5) |
+	#	 input	| 16(s5) | 20(s5) |
+	sw s5, 20(sp)
+
 	# store ra
-	sw ra, 20(sp)
+	sw ra, 24(sp)
 
 	# malloc space for row pointer
 	addi a0, x0, 4
@@ -72,6 +80,20 @@ classify:
 	# store col pointer in s3
 	add s3, x0, a0
 
+	# malloc space for dimensions of m0, m1, input in s5
+	# 	matrix	|   row	 |   col  |
+	#	  m0	|  0(s5) |  4(s5) |
+	#	  m1	|  8(s5) | 12(s5) |
+	#	 input	| 16(s5) | 20(s5) |
+	addi a0, x0, 24
+	jal ra, malloc
+
+	# check for malloc error
+	beq a0, x0, malloc_error
+
+	# store dimensions pointer in s5
+	add s5, x0, a0
+
 	# Read pretrained m0, store in 4(s0)
 	lw a0, 4(s0)
 	add a1, x0, s2
@@ -79,12 +101,25 @@ classify:
 	jal ra, read_input_matrices
 	sw a0, 4(s0)
 
+	# store dimensions for m0 in s5
+	lw t0, 0(s2) # row #
+	lw t1, 0(s3) # col #
+	sw t0, 0(s5)
+	sw t1, 4(s5)
+	
+
 	# Read pretrained m1, store in 8(s0)
 	lw a0, 8(s0)
 	add a1, x0, s2
 	add a2, x0, s3
 	jal ra, read_input_matrices
 	sw a0, 8(s0)
+	
+	# store dimensions for m1 in s5
+	lw t0, 0(s2) # row #
+	lw t1, 0(s3) # col #
+	sw t0, 8(s5)
+	sw t1, 12(s5)
 
 	# Read input matrix, store in 12(s0)
 	lw a0, 12(s0)
@@ -93,7 +128,17 @@ classify:
 	jal ra, read_input_matrices
 	sw a0, 12(s0)
 
+	# store dimensions for input in s5
+	lw t0, 0(s2) # row #
+	lw t1, 0(s3) # col #
+	sw t0, 16(s5)
+	sw t1, 20(s5)
+
+
+
 	# Compute h = matmul(m0, input)
+	# store H in s4
+
 
 
 
@@ -122,20 +167,24 @@ classify:
 	add a0, x0, s3
 	jal ra, free
 
+	# free dimensions pointer in s5
+	add a0, x0, s5
+	jal ra, free
+
 	# restore saved registers
 	lw s0, 0(sp)
 	lw s1, 4(sp)
 	lw s2, 8(sp)
 	lw s3, 12(sp)
 	lw s4, 16(sp)
-	lw ra, 20(sp)
+	lw s5, 20(sp)
+	lw ra, 24(sp)
 
 	# restore stack pointer
-	addi sp, sp, 24
+	addi sp, sp, 28
 
 
 	ret
-	
 
 
 read_input_matrices:
