@@ -54,12 +54,12 @@ read_matrix:
 	# a0 already set
 	add a1, x0, x0
     
-    ebreak # before fopen
+    # ebreak # before fopen
 
 	# open file from a0 with read permissions
 	jal ra, fopen
     
-    ebreak # after fopen
+    # ebreak # after fopen
 
 	# set t0 to be -1 for error testing
 	addi t0, x0, -1
@@ -77,12 +77,12 @@ read_matrix:
 	# set a2 to be 4 (size of int)
 	addi a2, x0, 4
 
-	ebreak # before fread row
+	# ebreak # before fread row
     
 	# fread row
 	jal ra, fread
     
-    ebreak # after fread row
+    # ebreak # after fread row
 
 	# check for row error
 	addi t0, x0, 4
@@ -97,12 +97,12 @@ read_matrix:
 	# set a2 to be 4 (size of int)
 	addi a2, x0, 4
     
-    ebreak # before fread col
+    # ebreak # before fread col
 
 	# fread col
 	jal ra, fread
     
-    ebreak # after fread col
+    # ebreak # after fread col
 
 	# check for col error
 	addi t0, x0, 4
@@ -118,7 +118,7 @@ read_matrix:
 	# store size of matrix in a0 
 	add a0, x0, t0
 
-	ebreak # before malloc
+	# ebreak # before malloc
     
 	# call malloc
 	jal ra, malloc
@@ -143,12 +143,12 @@ read_matrix:
 	# set a3 to the file pointer
 	add a3, x0, s3
     
-    ebreak # before read_input
+    # ebreak # before read_input
 
 	# read matrix 	
 	jal ra, read_input
     
-    ebreak # after read_input
+    # ebreak # after read_input
 
 	# Epilogue
 
@@ -195,7 +195,7 @@ read_input:
 	#	a0	the pointer to the matrix
 	# ======
     
-    ebreak # start of read_input
+    # ebreak # start of read_input
 
 	# set up registers for storing
 	addi sp, sp, -24
@@ -223,7 +223,7 @@ read_input:
 	sw s4, 20(sp)
 	add s4, x0, a0
 
-	ebreak # before read_input_loop
+	# ebreak # before read_input_loop
     
 	# call read_matrix loop
 	j read_input_loop
@@ -231,7 +231,7 @@ read_input:
 
 read_input_loop:
 	
-    ebreak # start of read_input_loop
+    # ebreak # start of read_input_loop
 
 	# perhaps only need row counter
 	# exit conditions
@@ -245,24 +245,24 @@ read_input_loop:
 	# set a2 to be 4 (size of int)
 	addi a2, x0, 4
 
-	ebreak # before fread entry
+	# ebreak # before fread entry
     
 	# fread entry
 	jal ra, fread
     
-    ebreak # after fread
+    # ebreak # after fread
 
 	# check for entry error
 	addi t0, x0, 4
 	bne a0, t0, fread_error
 
 	# increase matrix pointer
-	addi s1, s1, 4
+	addi s0, s0, 4
 
 	# increase entry counter
-	addi s2, s2, 4
+	addi s2, s2, 1
     
-    ebreak # before read_input_loop restart
+    # ebreak # before read_input_loop restart
 
 	# restart loop
 	j read_input_loop
@@ -272,7 +272,7 @@ read_input_loop:
 
 read_input_end:
 
-	ebreak # start of read_input_end 
+	# ebreak # start of read_input_end 
 
 	# set a0 to be the matrix pointer
 	add a0, x0, s4
@@ -288,9 +288,10 @@ read_input_end:
 	# restore stack pointer
 	addi sp, sp, 24
     
-    ebreak # end of read_input_end
-
-
+    # ebreak # end of read_input_end
+    # went to malloc_error; doesn't return back
+    # j ra
+    ret
 
 
 
