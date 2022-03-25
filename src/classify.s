@@ -118,7 +118,6 @@ classify:
 	sw t0, 0(s5)
 	sw t1, 4(s5)
 	
-
 	# Read pretrained m1, store in 8(s0)
 	lw a0, 8(s0)
 	add a1, x0, s2
@@ -192,6 +191,23 @@ classify:
 	# call relu
 	jal ra, relu
 
+	# malloc space matrix O
+	# total: 4(# of rows in O * # of columns in O)
+	#	= 4(rows of m1 * cols of input)
+	lw t0, 8(s5)
+	lw t1, 20(s5)
+	addi t2, x0, 4
+	mul a0, t0, t1
+	mul a0, a0, t2
+
+	# call malloc
+	jal ra, malloc
+
+	# check for malloc error
+	beq a0, x0, malloc_error
+
+	# store O matrix pointer in s6
+	add s6, x0, a0
 
 	# Compute o = matmul(m1, h)
 	# prepare for matmul
