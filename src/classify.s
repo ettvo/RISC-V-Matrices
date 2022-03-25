@@ -283,16 +283,6 @@ classify:
 
 
 epilogue:
-	# free pointers in s0
-	# s0[1] to s0[4]
-	lw a0, 4(s0)
-	jal ra, free
-	lw a0, 8(s0)
-	jal ra, free
-	lw a0, 12(s0)
-	jal ra, free
-	lw a0, 16(s0)
-	jal ra, free
 
 	# free input matrix in s0
 	add a0, x0, s0
