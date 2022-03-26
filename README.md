@@ -14,4 +14,4 @@ Part B:
 last 3 tasts (read_matrix, write_matrix, classify) were fairly straightforward and easy to program
 the biggest issue was with classify where forgetting to set a register or not malloc'ing correctly or providing the wrong dimensions were all easy mistakes to make
 all in all, read_matrix and write_matrix were good practice functions for RISC-V
-
+spent a lot of time trying to figure out what the last item that wasn't freed was
